@@ -18,20 +18,20 @@ namespace Exercise_005_InfoSystem
             get { return id; }
         }
 
-        private string FirstName { get; set; }
-        private string LastName { get; set; }
-        private Department Dep { get; set; }
-        private int Age { get; set; }
-        private int Salary { get; set; }
-        private int NumProj { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string DepartemntName { get; set; }
+        public int Age { get; set; }
+        public int Salary { get; set; }
+        public int NumProj { get; set; }
 
-        public Employee(string FirstName, string LastName, int Age, Department Dep, int Salary, int NumProj)
+        public Employee(string FirstName, string LastName, int Age, string DepName, int Salary, int NumProj)
         {
             count++;
             this.id = count;
             this.FirstName = FirstName;
             this.LastName = LastName;
-            this.Dep = Dep;
+            this.DepartemntName = DepName;
             this.Age = Age;
             this.Salary = Salary;
             this.NumProj = NumProj;

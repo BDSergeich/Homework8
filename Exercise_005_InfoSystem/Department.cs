@@ -14,55 +14,43 @@ namespace Exercise_005_InfoSystem
         
         private const int MaxEmloyees = 1_000_000;
         
-        public string DepartmentName { get; set; }
+        public string Name { get; set; }
         public DateTime CreationDate { get; set; }
 
         private int employeesCount;
         public int EmployeesCount { get { return employeesCount; } }
 
-        /// <summary>
-        /// Список сотрудников компании
-        /// </summary>
-        private List<Employee> employees;
-
         #region Конструктор
-        public Department(string departmentName, DateTime creationDate)
+        public Department(string name, DateTime creationDate)
         {
-            this.DepartmentName = departmentName;
+            this.Name = name;
             this.CreationDate = creationDate;
             this.employeesCount = 0;
-            this.employees = new List<Employee>();
         }
         #endregion
+
         /// <summary>
-        /// Добавление сотрудника в департамент
+        /// Увеличивает счетчик количества сотрудников в департаменте.
+        /// Eсли количество сотрудников превышает MaxEmloyees, возвращает false
         /// </summary>
-        /// <param name="emp">Сотрудник</param>
         /// <returns></returns>
-        public bool AddEmployee(Employee emp)
+        public bool AddEmployee()
         {
-            if (employeesCount >= MaxEmloyees) return false;
-            this.employees.Add(emp);
-            this.employeesCount = employees.Count;
+            if (employeesCount == MaxEmloyees) return false;
+            employeesCount++;
             return true;
         }
         /// <summary>
-        /// Удаление сотрудника из департамента
+        /// Уменьшает счетчик количества сотрудников в департаменте.
+        /// Если количество = 0, возвращает false.
         /// </summary>
-        /// <param name="emp">Сотрудник</param>
         /// <returns></returns>
-        public bool RemoveEmployee(Employee emp)
+        public bool RemoveEmployee()
         {
-            try
-            {
-                employees.Remove(emp);
-                this.employeesCount = employees.Count;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
+            if (employeesCount == 0) return false;
+            employeesCount--;
+            return true;
         }
+
     }
 }
