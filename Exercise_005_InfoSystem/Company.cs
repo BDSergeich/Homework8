@@ -16,21 +16,23 @@ namespace Exercise_005_InfoSystem
 
         /// <summary>
         /// Список департаментов
+        /// Key<string> - Название департамента (Department.Name) в нижнем регистре
         /// </summary>
-        private List<Department> Departments;
+        private Dictionary<string, Department> Departments;
         
         /// <summary>
         /// Список сотрудников
+        /// Key<string> - уникальная строка из имени, фамилии и возраста в нижнем регистре
         /// </summary>
-        private List<Employee> Employees;
+        private Dictionary<string, Employee> Employees;
 
         private string Path;
 
         public Company(string path)
         {
             this.Path = path;
-            this.Departments = new List<Department>();
-            this.Employees = new List<Employee>();
+            this.Departments = new Dictionary<string, Department>();
+            this.Employees = new Dictionary<string, Employee>();
             AddDepartment(NoName);
         }
 
@@ -99,10 +101,9 @@ namespace Exercise_005_InfoSystem
         /// </returns>
         public bool AddDepartment(string name, string dateTime = DefaultDate)
         {
-            var dep = Departments.Where(d => d.Name.Equals(name));
-            if (dep.Any()) return false;
+            if (Departments.ContainsKey(name.ToLower())) return false;
             
-            Departments.Add(new Department(name, DateTime.Parse(dateTime)));
+            Departments.Add(name.ToLower(), new Department(name, DateTime.Parse(dateTime)));
             return true;
         }
 
@@ -117,29 +118,66 @@ namespace Exercise_005_InfoSystem
         /// <param name="numProj">Количество проектов</param>
         /// <returns>
         /// 0 - такой сотрудник уже существует, 
-        /// 1 - сотрудник добавлен
-        /// 2 - невозможно добавить сотрудника в департамент, т.к. превышен лимт
+        /// 1 - сотрудник добавлен,
+        /// 2 - сотрудник добавлен в автоматически созданный департамент,
+        /// 3 - В указанном департаменте превышен лимит сотрудников. Сотрудник добавлен в "Нет департамента".
+        /// 4 - Невозможно добавить сотрудника без департамента. Лимит превышен
         /// </returns>
         public byte AddEmployee(string firstName, string lastName, int age, string depName, int salary, int numProj)
         {
-            // Проверка на наличие такого сотрудника уже в компании
-            var emp = Employees.Where(e => e.FirstName.Equals(firstName) && e.LastName.Equals(lastName) && e.Age.Equals(age));
-            if (emp.Any()) return 0;
-            
-            // Если указанного департамента не существует, запихнем сотрудника в "Нет департамента"
-            var dep = Departments.Where(d => d.Name.Equals(depName));
-            if (dep.Any())
-                dep = dep.Cast<Department>();
-            else 
-                dep = Departments.Where(d=>d.Name.Equals(NoName)).Cast<Department>();
+            byte result;
+            string key = (firstName + lastName + age).ToLower();
+            // Проверка на наличие такого сотрудника в компании
+            if (Employees.ContainsKey(key)) return 0;
 
-            if (dep.First().AddEmployee())
+            // Если указанного департамента не существует, мы его создадим автоматически
+            // и предупредим об этом пользователя
+            if (AddDepartment(depName)) 
+                result = 2;
+            else if(Departments[depName.ToLower()].AddEmployee())
             {
-                Employees.Add(new Employee(firstName, lastName, age, dep.First().Name, salary, numProj));
-                return 1;
+                result = 1;
             }
-            else return 2;
-            
+            else
+            {
+                depName = NoName;
+                result = 3;
+                if (!Departments[depName.ToLower()].AddEmployee()) return 4;
+            }
+            Employees.Add(key, new Employee(firstName, lastName, age, depName, salary, numProj));
+            return result;
         }
+
+        /// <summary>
+        /// Удаление департамента
+        /// </summary>
+        /// <param name="name">Имя департамента</param>
+        /// <returns>
+        /// false если такого департамента не существует или в нем есть сотрудники.
+        /// </returns>
+        public bool RemoveDepartment(string name)
+        {
+            name = name.ToLower();
+            // Нельзя удалить департамент в котором есть сотрудники,
+            // Или которого не существует
+            if (!Departments.ContainsKey(name) || Departments[name].EmployeesCount != 0)
+                return false;
+
+            return Departments.Remove(name);
+        }
+
+        public bool RenameDepartment(string oldName, string newName)
+        {
+            // Нельзя переименовать департамент, которого не существует.
+            if (!Departments.ContainsKey(oldName.ToLower())) return false;
+
+            foreach (var item in Employees)
+            {
+
+            }
+
+        }
+
+
     }
 }
