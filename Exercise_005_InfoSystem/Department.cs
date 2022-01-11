@@ -18,16 +18,20 @@ namespace Exercise_005_InfoSystem
         public DateTime CreationDate { get; set; }
 
         private int employeesCount;
-        public int EmployeesCount { get { return employeesCount; } }
 
         #region Конструктор
         public Department(string name, DateTime creationDate)
         {
             this.Name = name;
             this.CreationDate = creationDate;
-            this.employeesCount = 0;
+            this.employeesCount = 100;
         }
         #endregion
+
+        public int EmployeesCount()
+        {
+            return employeesCount;
+        }
 
         /// <summary>
         /// Увеличивает счетчик количества сотрудников в департаменте.
@@ -36,8 +40,8 @@ namespace Exercise_005_InfoSystem
         /// <returns></returns>
         public bool AddEmployee()
         {
-            if (employeesCount == MaxEmloyees) return false;
-            employeesCount++;
+            if (this.employeesCount == MaxEmloyees) return false;
+            this.employeesCount++;
             return true;
         }
         /// <summary>
@@ -47,8 +51,8 @@ namespace Exercise_005_InfoSystem
         /// <returns></returns>
         public bool RemoveEmployee()
         {
-            if (employeesCount == 0) return false;
-            employeesCount--;
+            if (this.employeesCount == 0) return false;
+            this.employeesCount--;
             return true;
         }
 
