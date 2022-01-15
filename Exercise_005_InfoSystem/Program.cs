@@ -91,8 +91,6 @@ namespace Exercise_005_InfoSystem
             
             Company company = new Company(Console.ReadLine());
 
-            company.AddEmployee("asd", "asd", "123", "asd", "123", "123");
-            
             do
             {
                 Console.Clear();
@@ -100,8 +98,8 @@ namespace Exercise_005_InfoSystem
                 Console.WriteLine();
 
                 Console.WriteLine("Выберите дальнейшее действие:");
-                Console.WriteLine("1 - Создать новую структуру вручную");
-                Console.WriteLine("2 - Редактировать данные");
+                Console.WriteLine("1 - Ручной ввод данных");
+                Console.WriteLine("2 - Редактировать/удалить/отсортировать данные");
                 Console.WriteLine("3 - Загрузить данные из файла (xml/json)");
                 Console.WriteLine("4 - Сохранить данные в файл (xml/json)");
                 Console.WriteLine("5 - Вывести данные в консоль");
@@ -167,7 +165,10 @@ namespace Exercise_005_InfoSystem
                 Console.WriteLine();
                 Console.WriteLine("1 - Редактировать департамент");
                 Console.WriteLine("2 - Редактировать сотрудника");
-                Console.WriteLine("3 - Завершить ввод");
+                Console.WriteLine("3 - Удалить департамент");
+                Console.WriteLine("4 - Удалить сотрудника");
+                Console.WriteLine("5 - Сортировка списка сотрудников");
+                Console.WriteLine("6 - Завершить ввод");
                 key = Console.ReadLine();
 
                 switch (key)
@@ -179,11 +180,25 @@ namespace Exercise_005_InfoSystem
                         AddOrEditEmployee(ref company, false);
                         break;
                     case "3":
+                        Remove(ref company, false);
+                        break;
+                    case "4":
+                        Remove(ref company, true);
+                        break;
+                    case "5":
+                        Sort(ref company);
+                        break;
+                    case "6":
                         return;
+
                 }
             } while (true);
         }
 
+        /// <summary>
+        /// Загрузка данных из файла
+        /// </summary>
+        /// <param name="company"></param>
         static void Import(ref Company company)
         {
             Console.Clear();
@@ -195,6 +210,10 @@ namespace Exercise_005_InfoSystem
             Console.ReadKey();
         }
 
+        /// <summary>
+        /// Сохранение данных в файл
+        /// </summary>
+        /// <param name="company"></param>
         static void Export(ref Company company)
         {
 
@@ -226,6 +245,10 @@ namespace Exercise_005_InfoSystem
 
         }
 
+        /// <summary>
+        /// Вывод данных в консоль
+        /// </summary>
+        /// <param name="company"></param>
         static void Print(ref Company company)
         {
             Console.Clear();
@@ -234,9 +257,10 @@ namespace Exercise_005_InfoSystem
         }
 
         /// <summary>
-        /// Добавление департамента вручную
+        /// Добавление или редактирование департамента
         /// </summary>
-        /// <param name="company"></param>
+        /// <param name="company">компания</param>
+        /// <param name="isNew">true - новый, false - редактирование</param>
         static void AddOrEditDepartment(ref Company company, bool isNew)
         {
             Console.Clear();
@@ -252,7 +276,7 @@ namespace Exercise_005_InfoSystem
                 oldName = Console.ReadLine();
             }
 
-            Console.WriteLine("Введите название департамента:");
+            Console.WriteLine("Введите новое название департамента:");
 
             string name = Console.ReadLine();
             if (name == string.Empty && isNew) name = "Отдел" + DateTime.Now.ToString("Hmmss");
@@ -284,19 +308,18 @@ namespace Exercise_005_InfoSystem
                         break;
                 }
             }
-            Console.ReadKey();
         }
 
         /// <summary>
-        /// Добавление нового или редактирование существующего сотрудника
+        /// Добавление нового или редактирование существующего сотрулника
         /// </summary>
-        /// <param name="company"></param>
+        /// <param name="company">компания</param>
+        /// <param name="isNew">true - новый, false - редактирование</param>
         static void AddOrEditEmployee(ref Company company, bool isNew)
         {
             Console.Clear();
             string postfix = DateTime.Now.ToString("Hmmss");
             int id = -1;
-            Console.Clear();
             if (isNew)
             {
                 Console.WriteLine("-=Добавление сотрудника=-");
@@ -362,9 +385,115 @@ namespace Exercise_005_InfoSystem
             else
             {
                 bool flag = company.EditEmployee(id, firstName, lastName, age, department, salary, numProj);
-                if (!flag) Console.WriteLine($"Сотрудник с id = {id} не найден!");
+                if (!flag)
+                {
+                    Console.WriteLine($"Сотрудник с id = {id} не найден!");
+                }
+                else
+                {
+                    Console.WriteLine("Успешно!");
+                }
             }
-            Console.ReadKey();
+            //Console.ReadKey();
+        }
+
+        /// <summary>
+        /// Удаление данных
+        /// </summary>
+        /// <param name="company">компания</param>
+        /// <param name="isEmployee">true - сотрудник, false - департамент</param>
+        static void Remove(ref Company company, bool isEmployee)
+        {
+            if (isEmployee)
+            {
+                Console.Clear();
+                Console.WriteLine("-=Удаление сотрудника=-");
+                Console.WriteLine("Введите id сотрудника для удаления:");
+                int id;
+                bool flag;
+                do
+                {
+                    flag = int.TryParse(Console.ReadLine(), out id);
+                } while (!flag);
+                
+                if (company.RemoveEmployee(id) > 0)
+                {
+                    Console.WriteLine("Успешно!");
+                }
+                else
+                {
+                    Console.WriteLine($"Удаление не удалось! Сотрудник с id = {id} не существует");
+                }
+            }
+            else
+            {
+                Console.Clear();
+                Console.WriteLine("-=Удаление департамента=-");
+                Console.WriteLine();
+
+                company.PrintDepartmentsList();
+                Console.WriteLine();
+                Console.WriteLine("Введите название департамента для удаления:");
+                if (company.RemoveDepartment(Console.ReadLine())) 
+                { 
+                    Console.WriteLine("Успешно!"); 
+                }
+                else
+                {
+                    Console.WriteLine("Удаление не выполнено!");
+                    Console.WriteLine("Нельзя удалить департамент, которого не существует,");
+                    Console.WriteLine("или в котором числятся сотрудники.");
+                }
+                
+            }
+            Console.ReadKey(true);
+        }
+
+        /// <summary>
+        /// Сортировка
+        /// </summary>
+        /// <param name="company"></param>
+        static void Sort(ref Company company)
+        {
+            Console.Clear();
+            Console.WriteLine("-=Сортировка списка сотрудников=-");
+            Console.WriteLine("Выберите вариант сортировки:");
+            Console.WriteLine("1 - Сортировка по id сотрудника");
+            Console.WriteLine("2 - Сортировка по возрасту сотрудника");
+            Console.WriteLine("3 - Сортировка по возрасту и зарплате сотрудника");
+            Console.WriteLine("4 - Сортировка по возрасту и зарплате сотрудника в рамках одного департамента");
+            Console.WriteLine("5 - Завершить");
+            bool flag = false;
+            do
+            {
+                string key = Console.ReadLine();
+
+                switch (key)
+                {
+                    case "1":
+                        company.SortEmployees();
+                        flag = true;
+                        Console.WriteLine("Успешно!");
+                        break;
+                    case "2":
+                        company.SortEmployees(FieldTOSort.AGE);
+                        flag = true;
+                        Console.WriteLine("Успешно!");
+                        break;
+                    case "3":
+                        company.SortEmployees(FieldTOSort.AGE_SALARY);
+                        flag = true;
+                        Console.WriteLine("Успешно!");
+                        break;
+                    case "4":
+                        company.SortEmployees(FieldTOSort.DEPART_AGE_SALARY);
+                        flag = true;
+                        Console.WriteLine("Успешно!");
+                        break;
+                    case "5":
+                        return;
+                }
+            }while (!flag);
         }
 
         /// <summary>

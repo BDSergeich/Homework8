@@ -19,18 +19,20 @@ namespace Exercise_005_InfoSystem
         /// Key<string> - Название департамента (Department.Name) в нижнем регистре
         /// </summary>
         private Dictionary<string, Department> Departments;
-        
+        //private List<Department> Departments;
+
         /// <summary>
         /// Список сотрудников
         /// </summary>
         private List<Employee> Employees;
 
-        public string Name { get; private set; }
+        public string Name { get; set; }
 
         public Company(string name)
         {
             this.Name = name;
             this.Departments = new Dictionary<string, Department>();
+            //this.Departments = new List<Department>();
             this.Employees = new List<Employee>();
             AddDepartment(NoNameDepartment);
         }
@@ -82,6 +84,8 @@ namespace Exercise_005_InfoSystem
             try
             {
                 string xml = File.ReadAllText(path);
+                // Компания
+                this.Name = XDocument.Parse(xml).Element("Company").Attribute("CompanyName").Value;
 
                 // Департаменты
                 var xDep = XDocument.Parse(xml)
@@ -126,6 +130,8 @@ namespace Exercise_005_InfoSystem
             {
                 string json = File.ReadAllText(path);
 
+                this.Name = JObject.Parse(json)["CompanyName"].ToString();
+
                 // Департаменты
                 var jDepartments = JObject.Parse(json)["Departments"].ToArray();
                 foreach (var item in jDepartments)
@@ -165,8 +171,11 @@ namespace Exercise_005_InfoSystem
             foreach (var item in Departments)
             {
                 if (item.Key == NoNameDepartment.ToLower()) continue;
+                //if (item.Name == NoNameDepartment) continue;
                 XAttribute xName = new XAttribute("Name", item.Value.Name);
                 XAttribute xDate = new XAttribute("CreationDate", item.Value.CreationDate);
+                //XAttribute xName = new XAttribute("Name", item.Name);
+                //XAttribute xDate = new XAttribute("CreationDate", item.CreationDate);
                 XElement xDepartment = new XElement("Department");
                 xDepartment.Add(xName, xDate);
                 xDepList.Add(xDepartment);
@@ -216,9 +225,13 @@ namespace Exercise_005_InfoSystem
             foreach (var item in Departments)
             {
                 if (item.Key == NoNameDepartment.ToLower()) continue;
+                //if (item.Name == NoNameDepartment.ToLower()) continue;
                 JObject jDep = new JObject();
                 jDep["Name"] = item.Value.Name;
                 jDep["CreationDate"] = item.Value.CreationDate;
+                //jDep["Name"] = item.Name;
+                //jDep["CreationDate"] = item.CreationDate;
+
                 jDepartments.Add(jDep);
             }
             jCompany["Departments"] = jDepartments;
@@ -264,6 +277,8 @@ namespace Exercise_005_InfoSystem
         {
             if (Departments.ContainsKey(name.ToLower())) return false;
             Departments.Add(name.ToLower(), new Department(name, DateTime.Parse(dateTime)));
+            //if (Departments.Any(d => d.Name == name)) return false;
+            //Departments.Add(new Department(name, DateTime.Parse(dateTime)));
             return true;
         }
 
@@ -294,28 +309,35 @@ namespace Exercise_005_InfoSystem
 
             // Если департамент существует, проверим можно в него добавить сотрудника или нельзя
             // Если департамента не существует проверим можно добавить сотрудника без департамента
+            
+            //if (Departments.Any(d => d.Name == depName))
             if (Departments.ContainsKey(depName.ToLower()))
             {
-                Department department = Departments[depName.ToLower()];
-                if (department.AddEmployee())
+                //if (Departments.Find(d => d.Name == depName).AddEmployee())
+                Department tempDep = Departments[depName.ToLower()];
+                if (tempDep.AddEmployee())
                 {
+                    Departments[depName.ToLower()] = tempDep;
                     result = 1;
                 }
                 else
                 {
-                    result = 3;
                     depName = NoNameDepartment;
+                    tempDep = Departments[depName.ToLower()];
+                    if (!tempDep.AddEmployee()) return 4;
+                    Departments[depName.ToLower()] = tempDep;
+                    result = 3;
                 }
             }
             else
             {
+                
                 depName = NoNameDepartment;
-                Department department = Departments[depName.ToLower()];
-                if (department.AddEmployee())
-                {
-                    result = 2;
-                }
-                else return 4;
+                Department tempDep = Departments[depName.ToLower()];
+                //if (Departments.Find(d => d.Name == depName).AddEmployee())
+                if (!tempDep.AddEmployee()) return 4;
+                Departments[depName.ToLower()] = tempDep;
+                result = 2;
             }
             Employees.Add(new Employee(firstName, lastName, int.Parse(age), depName, int.Parse(salary), int.Parse(numProj)));
             return result;
@@ -332,8 +354,11 @@ namespace Exercise_005_InfoSystem
         {
             // Нельзя удалить департамент в котором есть сотрудники, или котороного не существует
             if (!Departments.ContainsKey(name.ToLower()) || Departments[name.ToLower()].EmployeesCount() != 0) return false;
+            //if (!Departments.Any(d => d.Name == name) || Departments.Find(d => d.Name == name).EmployeesCount() != 0) return false;
+
 
             Departments.Remove(name.ToLower());
+            //Departments.Remove(Departments.Find(d => d.Name == name));
             return true;
         }
 
@@ -344,15 +369,18 @@ namespace Exercise_005_InfoSystem
         /// <returns>Число удаленных элементов</returns>
         public int RemoveEmployee(int id)
         {
-            string depName = String.Empty;
+            string depName = string.Empty;
             foreach (Employee item in Employees)
             {
                 if (item.Id == id) depName = item.DepartemntName;
             }
 
-            if (depName == String.Empty) return 0;
-            
-            Departments[depName.ToLower()].RemoveEmployee();
+            if (depName == string.Empty) return 0;
+
+            Department tempDep = Departments[depName.ToLower()];
+            tempDep.RemoveEmployee();
+            Departments[tempDep.Name.ToLower()] = tempDep;
+            //Departments.Find(d => d.Name == depName).RemoveEmployee();
             return Employees.RemoveAll(x => x.Id == id);
         }
 
@@ -363,14 +391,34 @@ namespace Exercise_005_InfoSystem
         /// <param name="newName">Новое название</param>
         /// <param name="newDate">Новая дата создания</param>
         /// <returns>
-        /// 0 - департамент с именем <name> не существует
-        /// 1 - департамент с новым именем <newName> уже существует
+        /// 0 - департамент с названием <name> не существует
+        /// 1 - департамент с названием <newName> уже существует
         /// 2 - департамент успешно переименован
         /// </returns>
         public byte EditDepartment(string name, string newName, string newDate)
         {
             if (!Departments.ContainsKey(name.ToLower())) return 0;
-            if (!Departments.ContainsKey(newName.ToLower())) return 2;
+            if (Departments.ContainsKey(newName.ToLower())) return 1;
+            //if (!Departments.Any(d => d.Name == name)) return 0;
+            //if (Departments.Any(d => d.Name == newName)) return 1;
+
+            //int cnt = 0;
+            //bool flag = false;
+            //while (cnt < Departments.Count)
+            //{
+            //    Department tempDep = Departments[cnt];
+            //    if (tempDep.Name == name)
+            //    {
+            //        if (newName != string.Empty)
+            //        {
+            //            tempDep.Name = newName;
+            //            flag = true;
+            //        }
+            //        if (newDate != string.Empty) tempDep.CreationDate = DateTime.Parse(newDate);
+            //        Departments[cnt] = tempDep;
+            //    }
+            //    cnt++;
+            //}
 
             Department tempDep = Departments[name.ToLower()];
             bool flag = false;
@@ -383,9 +431,10 @@ namespace Exercise_005_InfoSystem
             Departments.Remove(name.ToLower());
             Departments.Add(name.ToLower(), tempDep);
 
+
             // Если меняли название департамнта - поменяем у всех его сотрудников
             int cnt = 0;
-            while (cnt < Employees.Count - 1 && flag)
+            while (cnt < Employees.Count && flag)
             {
                 Employee tempEmp = Employees[cnt];
                 if (tempEmp.DepartemntName.Equals(name))
@@ -393,10 +442,11 @@ namespace Exercise_005_InfoSystem
                     tempEmp.DepartemntName = newName;
                     Employees[cnt] = tempEmp;
                 }
-                
                 cnt++;
             } 
-            return 1;
+            return 2;
+
+
         }
 
         /// <summary>
@@ -416,6 +466,7 @@ namespace Exercise_005_InfoSystem
             while (cnt < Employees.Count)
             {
                 Employee tempEmp = Employees[cnt];
+                Department tempDep = Departments[tempEmp.DepartemntName.ToLower()];
                 if (tempEmp.Id == id)
                 {
                     if (newFN != string.Empty) tempEmp.FirstName = newFN;
@@ -423,8 +474,11 @@ namespace Exercise_005_InfoSystem
                     if (newAge != string.Empty) tempEmp.Age = int.Parse(newAge);
                     if (newDep != string.Empty)
                     {
-                        Departments[tempEmp.DepartemntName.ToLower()].RemoveEmployee();
-                        Departments[newDep.ToLower()].AddEmployee();
+                        tempDep.RemoveEmployee();
+                        Departments[tempEmp.DepartemntName.ToLower()] = tempDep;
+                        tempDep = Departments[newDep.ToLower()];
+                        tempDep.AddEmployee();
+                        Departments[newDep.ToLower()] = tempDep;
                         tempEmp.DepartemntName = newDep;
                     }
                     if (newSalary != string.Empty) tempEmp.Salary = int.Parse(newSalary);
@@ -486,10 +540,10 @@ namespace Exercise_005_InfoSystem
             Console.WriteLine();
             Console.WriteLine();
             Console.WriteLine("Сотрудники компании:");
-            Console.WriteLine("     №         Имя        Фамилия     Возраст     Департамент     Оплата труда    Количество проектов");
+            Console.WriteLine("     №            Имя        Фамилия     Возраст        Департамент     Оплата труда    Количество проектов");
             foreach (var item in Employees)
             {
-                Console.WriteLine("{0,6}{1,12}{2,15}{3,12}{4,16}{5,17}{6,23}",
+                Console.WriteLine("{0,6}{1,15}{2,15}{3,12}{4,19}{5,17}{6,23}",
                     item.Id, item.FirstName, item.LastName, item.Age, item.DepartemntName, item.Salary, item.NumProj);
             }
         }
@@ -498,10 +552,10 @@ namespace Exercise_005_InfoSystem
         {
             // Вывод списка департаментов
             Console.WriteLine("Департаменты:");
-            Console.WriteLine("       Название            Дата создания        Количество сотрудников");
+            Console.WriteLine("          Название            Дата создания        Количество сотрудников");
             foreach (var item in Departments)
             {
-                Console.WriteLine("{0,15}{1,25}{2,30}", item.Value.Name, item.Value.CreationDate.ToString("d"), item.Value.EmployeesCount());
+                Console.WriteLine("{0,18}{1,25}{2,30}", item.Value.Name, item.Value.CreationDate.ToString("d"), item.Value.EmployeesCount());
             }
         }
     }

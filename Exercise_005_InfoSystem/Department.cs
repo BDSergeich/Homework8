@@ -24,7 +24,7 @@ namespace Exercise_005_InfoSystem
         {
             this.Name = name;
             this.CreationDate = creationDate;
-            this.employeesCount = 100;
+            this.employeesCount = 0;
         }
         #endregion
 
