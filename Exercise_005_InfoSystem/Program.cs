@@ -272,6 +272,9 @@ namespace Exercise_005_InfoSystem
             else
             {
                 Console.WriteLine("-=Редактирование департамента=-");
+                Console.WriteLine();
+                company.PrintDepartmentsList();
+                Console.WriteLine();
                 Console.WriteLine("Укажите id департамента для редактирования");
                 while (!int.TryParse(Console.ReadLine(), out depId)) { }
             }

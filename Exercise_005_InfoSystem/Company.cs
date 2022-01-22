@@ -554,6 +554,7 @@ namespace Exercise_005_InfoSystem
 
         public bool ChangeCompanyName(string name)
         {
+            if (this.Name == name) return false;
             Console.Write("Изменить название компании {0} на {1}? (y/n): ", this.Name, name);
             string key = Console.ReadLine();
             if (key.ToLower() == "y") return true;
