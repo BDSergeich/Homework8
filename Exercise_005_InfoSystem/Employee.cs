@@ -20,21 +20,33 @@ namespace Exercise_005_InfoSystem
 
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string DepartemntName { get; set; }
+        //public string DepartemntName { get; set; }
+        public int DepartemntId { get; set; }
         public int Age { get; set; }
         public int Salary { get; set; }
         public int NumProj { get; set; }
 
-        public Employee(string FirstName, string LastName, int Age, string DepName, int Salary, int NumProj)
+        public Employee(string FirstName, string LastName, int Age, int DepId, int Salary, int NumProj)
         {
             count++;
             this.id = count;
             this.FirstName = FirstName;
             this.LastName = LastName;
-            this.DepartemntName = DepName;
+            this.DepartemntId = DepId;
+            //this.DepartemntName = DepName;
             this.Age = Age;
             this.Salary = Salary;
             this.NumProj = NumProj;
+        }
+
+        public int GetLastId()
+        {
+            return count;
+        }
+
+        public void CorrectCount()
+        {
+            count--;
         }
 
     }

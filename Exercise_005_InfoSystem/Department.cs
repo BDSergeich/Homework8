@@ -13,20 +13,33 @@ namespace Exercise_005_InfoSystem
         // (можно добавить свои пожелания)
         
         private const int MaxEmloyees = 1_000_000;
-        
+
+        private static int LastNumber;
+
         public string Name { get; set; }
         public DateTime CreationDate { get; set; }
 
         private int employeesCount;
 
+        public int Id { get; set; }
+
         #region Конструктор
+
         public Department(string name, DateTime creationDate)
         {
+            LastNumber++;
+            this.Id = LastNumber;
             this.Name = name;
             this.CreationDate = creationDate;
             this.employeesCount = 0;
         }
         #endregion
+
+        public int GetLastId()
+        {
+            return LastNumber;
+        }
+
 
         public int EmployeesCount()
         {

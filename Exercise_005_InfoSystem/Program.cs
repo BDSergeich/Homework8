@@ -264,7 +264,7 @@ namespace Exercise_005_InfoSystem
         static void AddOrEditDepartment(ref Company company, bool isNew)
         {
             Console.Clear();
-            string oldName = string.Empty;
+            int depId = 0;
             if (isNew)
             {
                 Console.WriteLine("-=Добавление департамента=-");
@@ -272,14 +272,14 @@ namespace Exercise_005_InfoSystem
             else
             {
                 Console.WriteLine("-=Редактирование департамента=-");
-                Console.WriteLine("Введите название департамента для редактирования");
-                oldName = Console.ReadLine();
+                Console.WriteLine("Укажите id департамента для редактирования");
+                while (!int.TryParse(Console.ReadLine(), out depId)) { }
             }
 
             Console.WriteLine("Введите новое название департамента:");
 
             string name = Console.ReadLine();
-            if (name == string.Empty && isNew) name = "Отдел" + DateTime.Now.ToString("Hmmss");
+            if (name == string.Empty && isNew) name = "Отдел_" + DateTime.Now.ToString("Hmmss");
                 
             Console.WriteLine("Укажите дату создания:");
                 
@@ -293,12 +293,12 @@ namespace Exercise_005_InfoSystem
             }
             else
             {
-                byte result = company.EditDepartment(oldName, name, date);
+                byte result = company.EditDepartment(depId, name, date);
                 
                 switch (result)
                 {
                     case 0:
-                        Console.WriteLine($"Департамент с названием <{oldName}> не существует!");
+                        Console.WriteLine($"Департамент с id <{depId}> не существует!");
                         break;
                     case 1:
                         Console.WriteLine($"Департамент с название <{name}> уже существует!");
@@ -333,11 +333,11 @@ namespace Exercise_005_InfoSystem
 
             Console.WriteLine("Введите имя сотрудника:");
             string firstName = Console.ReadLine();
-            if (firstName == string.Empty && isNew) firstName = "Имя" + postfix;
+            if (firstName == string.Empty && isNew) firstName = "Имя_" + postfix;
 
             Console.WriteLine("Введите фамилию сотрудника:");
             string lastName = Console.ReadLine();
-            if (lastName == string.Empty && isNew) lastName = "Фамилия" + postfix;
+            if (lastName == string.Empty && isNew) lastName = "Фамилия_" + postfix;
 
             Console.WriteLine("Введите возраст сотрудника:");
             string age = Console.ReadLine();
@@ -348,8 +348,17 @@ namespace Exercise_005_InfoSystem
             Console.WriteLine();
             company.PrintDepartmentsList();
             Console.WriteLine();
-            Console.WriteLine("Введите имя департамента, в котором числится сотрудник:");
-            string department = Console.ReadLine();
+            Console.WriteLine("Укажите id департамента, в котором числится сотрудник:");
+            int department;
+            string userInput = Console.ReadLine();
+            while (!int.TryParse(userInput, out department)) 
+            {
+                if (userInput == string.Empty)
+                {
+                    department = 1;
+                    break;
+                }
+            }
 
             Console.WriteLine("Введите зарплату сотрудника:");
             string salary = Console.ReadLine();
@@ -387,14 +396,15 @@ namespace Exercise_005_InfoSystem
                 bool flag = company.EditEmployee(id, firstName, lastName, age, department, salary, numProj);
                 if (!flag)
                 {
-                    Console.WriteLine($"Сотрудник с id = {id} не найден!");
+                    Console.WriteLine("Ошибка!");
+                    Console.WriteLine("Id сотрудника или Id департамента указаны неверно!");
                 }
                 else
                 {
                     Console.WriteLine("Успешно!");
                 }
             }
-            //Console.ReadKey();
+            Console.ReadKey();
         }
 
         /// <summary>
@@ -433,8 +443,10 @@ namespace Exercise_005_InfoSystem
 
                 company.PrintDepartmentsList();
                 Console.WriteLine();
-                Console.WriteLine("Введите название департамента для удаления:");
-                if (company.RemoveDepartment(Console.ReadLine())) 
+                Console.WriteLine("Введите id департамента для удаления:");
+                int id = 0;
+                while (!int.TryParse(Console.ReadLine(), out id) && id < 2) { }
+                if (company.RemoveDepartment(id)) 
                 { 
                     Console.WriteLine("Успешно!"); 
                 }
